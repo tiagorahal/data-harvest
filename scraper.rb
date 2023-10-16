@@ -17,8 +17,12 @@ class Scraper
 
   def scrape
     Parallel.map(@pages_to_scrape, in_threads: 4) do |page|
-      document = get_document(page)
-      process_document(document)
+      begin
+        document = get_document(page)
+        process_document(document)
+      rescue => e
+        puts "Error happened while scraping #{page}: #{e.message}"
+      end
     end
     write_to_csv
   end
@@ -30,34 +34,49 @@ class Scraper
   end
 
   def get_document(page)
-    response = HTTParty.get(page, headers: {"User-Agent" => USER_AGENT})
-    Nokogiri::HTML(response.body)
+    begin
+      response = HTTParty.get(page, headers: {"User-Agent" => USER_AGENT})
+      Nokogiri::HTML(response.body)
+    rescue => e
+      puts "Error happened while getting document #{page}: #{e.message}"
+    end
   end
 
   def process_document(document)
-    document.css("li.product").each do |html_product|
-      url = html_product.css("a").first.attribute("href").value 
-      image = html_product.css("img").first.attribute("src").value 
-      name = html_product.css("h2").first.text 
-      price = html_product.css("span").first.text 
+    begin
+      document.css("li.product").each do |html_product|
+        url = html_product.css("a").first.attribute("href").value 
+        image = html_product.css("img").first.attribute("src").value 
+        name = html_product.css("h2").first.text 
+        price = html_product.css("span").first.text 
 
-      pokemon_product = PokemonProduct.new(url, image, name, price) 
+        pokemon_product = PokemonProduct.new(url, image, name, price) 
 
-      SEMAPHORE.synchronize { 
-        @pokemon_products.push(pokemon_product) 
-      }
+        SEMAPHORE.synchronize { 
+          @pokemon_products.push(pokemon_product) 
+        }
+      end
+    rescue => e
+      puts "Error happened while processing document: #{e.message}"
     end
   end
 
   def write_to_csv
-    CSV.open("output.csv", "wb", write_headers: true, headers: CSV_HEADERS) do |csv| 
-      @pokemon_products.each do |pokemon_product| 
-        csv << pokemon_product 
-      end 
+    begin
+      CSV.open("output.csv", "wb", write_headers: true, headers: CSV_HEADERS) do |csv| 
+        @pokemon_products.each do |pokemon_product| 
+          csv << pokemon_product 
+        end 
+      end
+    rescue => e
+      puts "Error happened while writing to CSV: #{e.message}"
     end
   end
 end
 
-# use the scraper
-scraper = Scraper.new
-scraper.scrape
+begin
+  scraper = Scraper.new
+  scraper.scrape
+rescue => e
+  puts "Error happened while creating scraper object or starting scraping: #{e.message}"
+end
