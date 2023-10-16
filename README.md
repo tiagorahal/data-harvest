@@ -4,7 +4,7 @@
 This Ruby web scraping project is designed to extract data from the website "scrapeme.live." It leverages popular Ruby gems, including HTTParty, Nokogiri, Parallel, and RSpec, to efficiently retrieve and parse information from the target website. Whether you are a seasoned developer or a beginner, this project will provide a useful foundation for web scraping with Ruby.
 
 ## Features
-1. **Web Scraping:** This project is designed to scrape data from the website [scrapeme.live](http://www.scrapeme.live). It can be easily modified to target other websites, making it a versatile tool for data extraction.
+1. **Web Scraping:** This project is designed to scrape data from the website [scrapeme.live](https://scrapeme.live/shop/). It can be easily modified to target other websites, making it a versatile tool for data extraction.
 
 2. **HTTParty Integration:** We use the HTTParty gem to make HTTP requests to the target website. This gem simplifies the process of fetching web pages, handling cookies, and managing headers.
 
